@@ -9,7 +9,7 @@ export function Logo({ className = '' }: { className?: string }) {
         transition={{ type: "spring", stiffness: 200, damping: 15 }}
         className="relative w-12 h-12 flex items-center justify-center rounded-xl overflow-hidden shadow-lg shadow-green-900/20 bg-white"
       >
-        <img src="/logo-amiot.png" alt="AMIOT espaces verts" className="w-full h-full object-cover" />
+        <img src={`${process.env.NEXT_PUBLIC_BASE_PATH}/logo-amiot.png`} alt="AMIOT espaces verts" className="w-full h-full object-cover" />
       </motion.div>
       <div className="flex flex-col leading-none">
         <motion.span 

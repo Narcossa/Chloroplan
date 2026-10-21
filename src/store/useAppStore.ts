@@ -4,22 +4,25 @@ import { persist } from 'zustand/middleware';
 // --- TYPES TO KEEP EXISTING APP WORKING ---
 export type Phase = 'PREPARATION' | 'FOUILLES' | 'SECHAGE' | 'POSE' | 'RECEPTION';
 
-export interface ChantierLegacy {
+export interface Chantier {
   id: string;
+  clientId?: string;
+  name?: string;
   clientName: string;
   phone: string;
   address: string;
   type: string;
   linearMeters: number;
   colorRal: string;
-  soilType: string;
-  dog: boolean;
-  elec: boolean;
-  dict: boolean;
+  soilType?: string;
+  dog?: boolean;
+  elec?: boolean;
+  dict?: boolean;
   notes: string;
   status: 'NOUVEAU' | 'PLANIFIE' | 'EN_COURS' | 'TERMINE';
   phaseActuelle: Phase;
   progress: number;
+  createdAt?: string;
 }
 export interface Equipe { id: string; name: string; members: string; }
 export interface PlanningTask { id: string; chantierId: string; equipeId: string; day: string; }
@@ -34,18 +37,17 @@ export type Priority = 'BASSE' | 'MOYENNE' | 'HAUTE' | 'URGENTE';
 export type Role = 'ADMIN' | 'COLLABORATEUR';
 
 export interface User { id: string; firstName: string; lastName: string; email: string; username?: string; password?: string; role: Role; color: string; isActive: boolean; showInPlanning: boolean; }
-export interface Client { id: string; name: string; address: string; phone: string; email: string; startDate: string; }
-export interface Chantier { id: string; clientId: string; name: string; address: string; status: string; progress: number; }
+export interface Client { id: string; name: string; address: string; phone: string; email: string; startDate?: string; }
 export interface Task { id: string; title: string; description: string; clientId: string; chantierId: string; priority: Priority; status: TaskStatus; dueDate?: string; estimatedTime?: number; assigneeId?: string; createdAt: string; }
-export interface Vehicle { id: string; name: string; plate: string; type: string; motDate: string; }
+export interface Vehicle { id: string; name: string; immatriculation: string; motDate: string; assignedTo: string; }
 export interface Invoice { id: string; artisanId: string; date: string; description: string; hours: number; amount: number; status: string; }
-export interface Expense { id: string; userId: string; clientId: string; amount: number; date: string; description: string; status: string; }
-export interface Supplier { id: string; companyName: string; contactName: string; phone: string; email: string; }
+export interface Expense { id: string; userId: string; clientId: string; amount: number; date: string; description: string; category?: string; status: string; }
+export interface Supplier { id: string; companyName: string; contactName: string; phone: string; email: string; category: string; }
 
 // --- APP STATE ---
 interface AppState {
   // Legacy arrays
-  chantiers: ChantierLegacy[];
+  chantiers: Chantier[];
   equipes: Equipe[];
   planningTasks: PlanningTask[];
   materialRequests: MaterialRequest[];
@@ -69,9 +71,7 @@ interface AppState {
   logout: () => void;
 
   // Legacy actions
-  addChantier: (chantier: Omit<ChantierLegacy, 'id' | 'status' | 'phaseActuelle' | 'progress'>) => void;
   updateChantierProgress: (id: string, progress: number, phase: Phase) => void;
-  updateTaskLocation: (taskId: string, newEquipeId: string, newDay: string) => void;
   addMaterialRequest: (req: Omit<MaterialRequest, 'id' | 'status'>) => void;
   addFieldAlert: (alert: Omit<FieldAlert, 'id' | 'status' | 'timestamp'>) => void;
   markAlertAsRead: (id: string) => void;
@@ -89,7 +89,7 @@ interface AppState {
   updateVehicle: (id: string, vehicle: Partial<Vehicle>) => void;
   addInvoice: (invoice: Omit<Invoice, 'id'>) => void;
   addExpense: (expense: Omit<Expense, 'id'>) => void;
-  addChantier: (chantier: Omit<Chantier, 'id' | 'createdAt'>) => void;
+  addChantier: (chantier: Omit<Chantier, 'id' | 'status' | 'phaseActuelle' | 'progress' | 'createdAt'>) => void;
   updateChantier: (id: string, chantier: Partial<Chantier>) => void;
   addUser: (user: Omit<User, 'id'>) => void;
   updateUser: (id: string, user: Partial<User>) => void;
@@ -122,7 +122,7 @@ export const useAppStore = create<AppState>()(
       ],
       clients: [{ id: 'c1', name: 'M. Dupont', address: '123 rue de la Clôture', phone: '06 00', email: 'du@po.nt', startDate: '2026-10-10' }],
       tasks: [{ id: 'nt1', title: 'Couler béton', description: 'Scellement', clientId: 'c1', chantierId: '1', priority: 'HAUTE', status: 'A_FAIRE', assigneeId: 'u2', createdAt: new Date().toISOString() }],
-      vehicles: [{ id: 'v1', name: 'Peugeot Expert', plate: 'AB-123-CD', type: 'Fourgon', motDate: '2027-05-10' }],
+      vehicles: [{ id: 'v1', name: 'Peugeot Expert', immatriculation: 'AB-123-CD', motDate: '2027-05-10', assignedTo: 'Flotte Générale' }],
       invoices: [],
       expenses: [],
       suppliers: [],
@@ -130,9 +130,7 @@ export const useAppStore = create<AppState>()(
       // Legacy Actions
       login: (user) => set({ currentUser: user }),
       logout: () => set({ currentUser: null }),
-      addChantier: (chantierData) => set((state) => ({ chantiers: [...state.chantiers, { ...chantierData, id: Math.random().toString(36).substring(7), status: 'NOUVEAU', phaseActuelle: 'PREPARATION', progress: 0 }]})),
       updateChantierProgress: (id, progress, phase) => set((state) => ({ chantiers: state.chantiers.map((c) => c.id === id ? { ...c, progress, phaseActuelle: phase, status: progress === 100 ? 'TERMINE' : 'EN_COURS' } : c)})),
-      updateTaskLocation: (taskId, newEquipeId, newDay) => set((state) => ({ planningTasks: state.planningTasks.map((t) => t.id === taskId ? { ...t, equipeId: newEquipeId, day: newDay } : t)})),
       addMaterialRequest: (req) => set((state) => ({ materialRequests: [...state.materialRequests, { ...req, id: Math.random().toString(36).substring(7), status: 'PENDING' }]})),
       addFieldAlert: (alert) => set((state) => ({ alerts: [...state.alerts, { ...alert, id: Math.random().toString(36).substring(7), status: 'NON_LU', timestamp: new Date().toISOString() }]})),
       markAlertAsRead: (id) => set((state) => ({ alerts: state.alerts.map((a) => a.id === id ? { ...a, status: 'TRAITE' } : a)})),
@@ -149,7 +147,7 @@ export const useAppStore = create<AppState>()(
       updateVehicle: (id, vehicleData) => set((state) => ({ vehicles: state.vehicles.map(v => v.id === id ? { ...v, ...vehicleData } : v) })),
       addInvoice: (invoiceData) => set((state) => ({ invoices: [{ ...invoiceData, id: Math.random().toString(36).substring(7) }, ...state.invoices] })),
       addExpense: (expenseData) => set((state) => ({ expenses: [{ ...expenseData, id: Math.random().toString(36).substring(7) }, ...state.expenses] })),
-      addChantier: (chantierData) => set((state) => ({ chantiers: [{ ...chantierData, id: Math.random().toString(36).substring(7), createdAt: new Date().toISOString() }, ...state.chantiers] })),
+      addChantier: (chantierData) => set((state) => ({ chantiers: [{ ...chantierData, id: Math.random().toString(36).substring(7), status: 'NOUVEAU', phaseActuelle: 'PREPARATION', progress: 0, createdAt: new Date().toISOString() }, ...state.chantiers] })),
       updateChantier: (id, chantierData) => set((state) => ({ chantiers: state.chantiers.map(c => c.id === id ? { ...c, ...chantierData } : c) })),
       addUser: (userData) => set((state) => ({ users: [{ ...userData, id: Math.random().toString(36).substring(7), showInPlanning: true }, ...state.users] })),
       updateUser: (id, userData) => set((state) => ({ users: state.users.map(u => u.id === id ? { ...u, ...userData } : u) })),

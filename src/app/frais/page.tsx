@@ -39,7 +39,7 @@ export default function FraisPage() {
                   <td className="p-4 text-sm font-medium text-gray-900">{new Date(expense.date).toLocaleDateString('fr-FR')}</td>
                   <td className="p-4 text-sm text-gray-600">{expense.userId}</td>
                   <td className="p-4 text-sm font-bold text-gray-900">{expense.amount.toFixed(2)} €</td>
-                  <td className="p-4 text-sm text-gray-600">{expense.category}</td>
+                  <td className="p-4 text-sm text-gray-600">{expense.category || expense.description}</td>
                   <td className="p-4">
                     <span className={`text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1 w-max ${
                       expense.status === 'APPROUVE' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'

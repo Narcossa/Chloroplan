@@ -21,8 +21,6 @@ export default function NouveauChantierPage() {
       address,
       phone: '06 00 00 00 00', // Mock
       type,
-      progress: 0,
-      phaseActuelle: 'Préparation',
       linearMeters: Number(linearMeters) || 0,
       colorRal,
       notes: ''

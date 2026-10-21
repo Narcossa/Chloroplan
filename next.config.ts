@@ -1,15 +1,19 @@
 import type { NextConfig } from "next";
 
+const basePath = '/Chloroplan';
+
 const nextConfig: NextConfig = {
   /* config options here */
   output: 'export',
-  basePath: '/Chloroplan',
-  assetPrefix: '/Chloroplan/',
+  basePath,
+  assetPrefix: `${basePath}/`,
+  // Les chemins écrits à la main (ex. <img src>) ne reçoivent pas le basePath automatiquement
+  env: {
+    NEXT_PUBLIC_BASE_PATH: basePath,
+  },
   images: {
     unoptimized: true,
   },
-  cacheComponents: true,
-  partialPrefetching: true,
   turbopack: {
     rules: {
       "*.css": {

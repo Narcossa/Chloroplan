@@ -14,8 +14,6 @@ export const metadata: Metadata = {
   description: "Logiciel de gestion de chantiers et poseurs",
 };
 
-export const instant = false;
-
 export default function RootLayout({
   children,
 }: Readonly<{

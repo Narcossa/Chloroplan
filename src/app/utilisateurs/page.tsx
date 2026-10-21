@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useAppStore, User, UserRole } from '@/store/useAppStore';
+import { useAppStore, User, Role } from '@/store/useAppStore';
 import { Plus, Search, Trash2, Edit3, Shield, User as UserIcon, X, Save } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -23,7 +23,7 @@ export default function UtilisateursPage() {
   const [email, setEmail] = useState('');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
-  const [role, setRole] = useState<UserRole>('COLLABORATEUR');
+  const [role, setRole] = useState<Role>('COLLABORATEUR');
   const [color, setColor] = useState('#fbbf24');
 
   useEffect(() => {
@@ -204,7 +204,7 @@ export default function UtilisateursPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-1">Rôle</label>
-                  <select value={role} onChange={e => setRole(e.target.value as UserRole)} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm">
+                  <select value={role} onChange={e => setRole(e.target.value as Role)} className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm">
                     <option value="COLLABORATEUR">Collaborateur (Artisan)</option>
                     <option value="ADMIN">Administrateur (Bureau)</option>
                   </select>
